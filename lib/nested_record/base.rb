@@ -2,9 +2,10 @@
 
 class NestedRecord::Base
   include ActiveModel::Model
-  include ActiveModel::Attributes
+  include ActiveModel::Attributes 
   include ActiveModel::Dirty
   include ActiveModel::Validations::Callbacks
+  include ActiveRecord::AttributeAssignment
   include NestedRecord::Macro
 
   class << self
