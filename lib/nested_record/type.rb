@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class NestedRecord::Type < ActiveModel::Type::Value
+  include ActiveModel::Type::Helpers::Mutable
   require 'nested_record/type/many'
   require 'nested_record/type/one'
 
@@ -24,6 +25,11 @@ class NestedRecord::Type < ActiveModel::Type::Value
   def serialize(obj)
     ActiveSupport::JSON.encode(obj.as_json) unless obj.nil?
   end
+
+  def changed_in_place?(raw_old_value, new_value)
+    deserialize(raw_old_value) != new_value
+  end
+
 
   private
 
