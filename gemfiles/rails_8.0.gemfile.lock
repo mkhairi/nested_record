@@ -63,12 +63,19 @@ PLATFORMS
 
 DEPENDENCIES
   activemodel (~> 8.0.0)
+  activerecord (~> 8.0.0)
   appraisal
+  benchmark
+  bigdecimal
   bundler (>= 2)
+  logger
   money-rails
+  mutex_m
   nested_record!
+  ostruct
   rake (~> 13.0)
   rspec (~> 3.0)
+  sqlite3 (>= 2.1)
 
 BUNDLED WITH
    2.7.1

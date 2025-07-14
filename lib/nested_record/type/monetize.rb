@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
+require 'money'
+require 'monetize'
+
 class NestedRecord::Type
   class Monetize < ActiveModel::Type::Value
     include ActiveModel::Type::Helpers::Mutable
 
-    def initialize(currency: nil, **options)
+    def initialize(currency: nil, currency_attribute: nil, **options)
       @currency = currency
+      @currency_attribute = currency_attribute
       @options = options
       super()
     end
@@ -15,12 +19,25 @@ class NestedRecord::Type
       return nil if value.nil? || value == ''
 
       if value.is_a?(Hash)
-        amount = value['amount'] || value[:amount]
-        currency = value['currency'] || value[:currency] || @currency || Money.default_currency
+        amount = value['amount'] || value[:amount] || value['cents'] || value[:cents]
+        currency = value['currency'] || value[:currency] || value['currency_iso'] || value[:currency_iso] || @currency || Money.default_currency
         return Money.new(amount, currency) if amount
-      elsif value.respond_to?(:to_i)
+      else
         currency = @currency || Money.default_currency
-        return Money.new(value.to_i, currency)
+        
+        # For backward compatibility, treat integers as cents
+        # For decimals, use monetize gem's to_money conversion (treats as dollars)
+        if value.is_a?(Integer)
+          return Money.new(value, currency)
+        elsif value.respond_to?(:to_money)
+          # Use monetize's conversion for decimal values
+          begin
+            return value.to_money(currency)
+          rescue NoMethodError, Monetize::ParseError
+            # Fallback: if to_money fails, try to convert to integer and treat as cents
+            return Money.new(value.to_i, currency) if value.respond_to?(:to_i)
+          end
+        end
       end
 
       nil
@@ -47,18 +64,18 @@ class NestedRecord::Type
 
       if value.is_a?(Money)
         return {
-          amount: value.cents,
-          currency: value.currency.to_s
-        }.to_json
+          'cents' => value.cents,
+          'currency_iso' => value.currency.to_s
+        }
       end
 
       # If not a Money object, try to cast it first
       money_value = cast(value)
       if money_value
         {
-          amount: money_value.cents,
-          currency: money_value.currency.to_s
-        }.to_json
+          'cents' => money_value.cents,
+          'currency_iso' => money_value.currency.to_s
+        }
       else
         nil
       end

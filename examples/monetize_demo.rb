@@ -39,9 +39,9 @@ product = Product.new(
   name: "Awesome Widget",
   price_attributes: {
     name: "Standard Price",
-    amount: 2999,  # $29.99 in cents
+    amount: 29.99,  # $29.99 (decimal automatically converted to 2999 cents)
     discount: Money.new(500, 'USD'),  # $5.00
-    tax: 299  # $2.99 in cents
+    tax: 299  # $2.99 (integer treated as cents)
   }
 )
 

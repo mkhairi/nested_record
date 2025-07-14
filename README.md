@@ -245,24 +245,93 @@ end
 
 product = Product.new
 product.build_price(
-  amount: 1000,        # Will be converted to Money.new(1000, default_currency)
+  amount: 10.00,       # Will be converted to Money.new(1000, default_currency) - decimals converted to cents
   discount: Money.new(100, 'USD'),
-  tax: 50,
+  tax: 50,             # Integers treated as cents
   tax_currency: 'EUR'
 )
 
-product.price.amount.cents    # => 1000
+product.price.amount.cents    # => 1000 (10.00 * 100)
 product.price.amount.currency # => #<Money::Currency id: usd>
 product.price.discount        # => #<Money::Currency id: usd>
 product.price.tax.currency    # => #<Money::Currency id: eur>
 ```
 
 The `monetize` method:
-- Creates a money attribute that automatically converts integers to Money objects
+- Creates a money attribute that automatically converts decimal values to Money objects 
+- Treats integer values as cents (for backward compatibility)
+- **Leverages monetize gem's proven conversion algorithms** (e.g., `value.to_money(currency)`)
+- Handles currency-specific rules automatically (e.g., JPY has no fractional parts)
 - Optionally creates a corresponding currency attribute (e.g., `amount_currency`)
 - Supports custom currency field names with the `:with` option
 - Can disable currency field creation by setting `:with` to `false`
 - Properly serializes/deserializes Money objects to/from JSON
+- Works seamlessly with `nested_accessors` for direct attribute access
+
+**Architecture Note**: NestedRecord's monetize implementation now reuses the monetize gem's `to_money` conversion logic instead of implementing custom decimal-to-cents conversion. This ensures:
+- ✅ Consistent behavior with money-rails and other monetize-based libraries
+- ✅ Currency-aware parsing and rounding rules
+- ✅ Automatic updates when the monetize gem improves
+- ✅ Reduced code duplication and maintenance burden
+
+#### Using monetize with nested_accessors
+
+You can use `monetize` within `nested_accessors` blocks for convenient access to money attributes:
+
+```ruby
+class User < ApplicationRecord
+  nested_accessors from: :financial_info do
+    monetize :salary, currency: 'USD'
+    monetize :bonus, with: :bonus_currency
+    monetize :commission, with: false  # No currency field
+  end
+end
+
+user = User.new
+user.salary = 7500000  # $75,000 in cents
+user.bonus = Money.new(500000, 'EUR')  # €5,000
+
+user.salary.format       # => "$75,000.00"
+user.salary_currency     # => "USD"
+user.bonus_currency      # => "EUR"
+```
+
+#### Money-Rails Compatibility
+
+NestedRecord's `monetize` method is designed to be compatible with money-rails. The method signature matches exactly:
+
+```ruby
+# Both gems use the same signature:
+def monetize(*fields)
+  options = fields.extract_options!
+  # ...
+end
+```
+
+When your ActiveRecord model includes both NestedRecord and money-rails, the method automatically delegates to the appropriate implementation:
+
+- **ActiveRecord models with database columns**: Delegates to money-rails' `monetize` method for traditional database-backed money attributes
+- **NestedRecord attributes**: Uses NestedRecord's implementation for JSON-based nested attributes
+- **Multiple arguments**: Automatically delegates to money-rails when called with multiple arguments (money-rails style)
+
+This means you can safely use both gems together:
+
+```ruby
+class Product < ApplicationRecord
+  include NestedRecord::Macro
+
+  # This will use money-rails (database column)
+  monetize :base_price_cents
+
+  # This will use NestedRecord (JSON attribute)
+  has_one_nested :detailed_pricing do
+    monetize :wholesale_price, currency: 'USD'
+    monetize :retail_price, with: :retail_currency
+  end
+end
+```
+
+The method resolution is automatic and requires no special configuration.
 
 ## Development
 

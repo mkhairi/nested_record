@@ -61,12 +61,19 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  activerecord (>= 7.2)
   appraisal
+  benchmark
+  bigdecimal
   bundler (>= 2)
+  logger
   money-rails
+  mutex_m
   nested_record!
+  ostruct
   rake (~> 13.0)
   rspec (~> 3.0)
+  sqlite3 (>= 1.4)
 
 BUNDLED WITH
    2.7.1
