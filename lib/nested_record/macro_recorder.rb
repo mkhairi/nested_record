@@ -12,6 +12,7 @@ class NestedRecord::MacroRecorder
     primary_key
     has_one_nested
     has_many_nested
+    monetize
     subtype subtypes
     collection_methods
     validate validates validates! validates_with validates_each

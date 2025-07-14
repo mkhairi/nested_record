@@ -1,4 +1,3 @@
-
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "nested_record/version"
@@ -27,6 +26,13 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "appraisal"
   spec.add_development_dependency "money-rails"
+  spec.add_development_dependency "mutex_m"
+  spec.add_development_dependency "logger"
+  spec.add_development_dependency "ostruct"
+  spec.add_development_dependency "bigdecimal"
+  spec.add_development_dependency "activerecord", ">= 7.2"
+  spec.add_development_dependency "sqlite3", ">= 1.4"
+  spec.add_development_dependency "benchmark"
 
   spec.add_dependency "activemodel", "> 7.1", "< 8.2"
 end

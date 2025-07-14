@@ -18,13 +18,26 @@ class NestedRecord::NestedAccessorsSetup
       end.map! { |_, args, _| args.first.macro_recorder }
     ].flat_map(&:macros)
 
-    macros.each do |macro, args, _block|
+    macros.each do |macro, args, kwargs, _block|
       case macro
       when :attribute
         attr_name = args.first
         delegate(attr_name)
         delegate("#{attr_name}?")
         delegate1("#{attr_name}=")
+      when :monetize
+        attr_name = args.first
+        currency_name = kwargs[:with] || :"#{attr_name}_currency"
+
+        # Delegate the money attribute
+        delegate(attr_name)
+        delegate1("#{attr_name}=")
+
+        # Delegate currency attribute unless disabled
+        unless kwargs[:with] == false
+          delegate(currency_name)
+          delegate1("#{currency_name}=")
+        end
       when :has_one_nested
         assoc_name = args.first
         delegate(assoc_name)
