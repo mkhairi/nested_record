@@ -58,11 +58,12 @@ GEM
     uri (1.0.3)
 
 PLATFORMS
-  ruby
+  x86_64-linux
 
 DEPENDENCIES
   appraisal
   bundler (>= 2)
+  money-rails
   nested_record!
   rake (~> 13.0)
   rspec (~> 3.0)
