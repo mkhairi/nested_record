@@ -152,10 +152,10 @@ Common attributes, validations and other settings can be DRY-ed to modules calle
 ```ruby
 module TitleAndDescription
   extend NestedRecord::Concern
-  
+
   attribute :title
   attribute :description
-  
+
   validates :title, presence: true
 end
 
@@ -222,6 +222,47 @@ user = User.new
 user.age = 33
 user.active = true
 ```
+
+### Monetize Support
+
+NestedRecord supports [Money](https://github.com/RubyMoney/money) attributes through integration with the [money-rails](https://github.com/RubyMoney/money-rails) gem. This allows you to easily handle money/currency attributes in your nested records.
+
+First, add `money-rails` to your Gemfile:
+
+```ruby
+gem 'money-rails'
+```
+
+Then you can use the `monetize` method in your nested record classes:
+
+```ruby
+class Product::Price < NestedRecord::Base
+  monetize :amount                    # Creates amount attribute with default currency
+  monetize :discount, currency: 'USD' # Creates discount attribute with USD currency
+  monetize :tax, with: :tax_currency  # Creates tax attribute with custom currency field name
+  monetize :shipping, with: false     # Creates shipping attribute without currency field
+end
+
+product = Product.new
+product.build_price(
+  amount: 1000,        # Will be converted to Money.new(1000, default_currency)
+  discount: Money.new(100, 'USD'),
+  tax: 50,
+  tax_currency: 'EUR'
+)
+
+product.price.amount.cents    # => 1000
+product.price.amount.currency # => #<Money::Currency id: usd>
+product.price.discount        # => #<Money::Currency id: usd>
+product.price.tax.currency    # => #<Money::Currency id: eur>
+```
+
+The `monetize` method:
+- Creates a money attribute that automatically converts integers to Money objects
+- Optionally creates a corresponding currency attribute (e.g., `amount_currency`)
+- Supports custom currency field names with the `:with` option
+- Can disable currency field creation by setting `:with` to `false`
+- Properly serializes/deserializes Money objects to/from JSON
 
 ## Development
 

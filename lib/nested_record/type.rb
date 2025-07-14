@@ -4,6 +4,7 @@ class NestedRecord::Type < ActiveModel::Type::Value
   include ActiveModel::Type::Helpers::Mutable
   require 'nested_record/type/many'
   require 'nested_record/type/one'
+  require 'nested_record/type/monetize'
 
   def initialize(setup)
     @setup = setup
