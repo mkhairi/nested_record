@@ -7,16 +7,24 @@ class NestedRecord::Type
   class Monetize < ActiveModel::Type::Value
     include ActiveModel::Type::Helpers::Mutable
 
-    def initialize(currency: nil, currency_attribute: nil, **options)
+    def initialize(currency: nil, currency_attribute: nil, default: nil, **options)
       @currency = currency
       @currency_attribute = currency_attribute
+      @default = default
       @options = options
       super()
     end
 
     def cast(value)
       return value if value.is_a?(Money)
-      return nil if value.nil? || value == ''
+      
+      # Handle default value when value is nil
+      if value.nil?
+        return cast(@default) if @default
+        return nil
+      end
+      
+      return nil if value == ''
 
       if value.is_a?(Hash)
         amount = value['amount'] || value[:amount] || value['cents'] || value[:cents]
