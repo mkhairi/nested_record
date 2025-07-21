@@ -31,6 +31,7 @@ module NestedRecord::Macro
       # Handle NestedRecord monetize (single field, ActiveModel attributes)
       name = fields.first
       currency = options.delete(:currency)
+      default = options.delete(:default)
 
       require_money_rails!
 
@@ -38,7 +39,10 @@ module NestedRecord::Macro
       currency_name = options[:with] || :"#{attribute_name}_currency"
 
       # Define the money attribute with custom type
-      attribute attribute_name, NestedRecord::Type::Monetize.new(currency: currency, currency_attribute: currency_name, **options)
+      attribute_options = {}
+      attribute_options[:default] = -> { default } if default
+      
+      attribute attribute_name, NestedRecord::Type::Monetize.new(currency: currency, currency_attribute: currency_name, default: default, **options), **attribute_options
 
       # Define currency attribute if not explicitly disabled
       unless options[:with] == false || (respond_to?(:has_attribute?) && has_attribute?(currency_name))
