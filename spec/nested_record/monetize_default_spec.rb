@@ -14,7 +14,7 @@ RSpec.describe 'NestedRecord monetize default values' do
   # Model with various default value types
   nested_model(:ProductWithDefaults) do
     monetize :price, currency: 'USD', default: 9.99           # Decimal default
-    monetize :shipping, default: 500                          # Integer default (cents)  
+    monetize :shipping, default: 500                          # Integer default (cents)
     monetize :tax, default: Money.new(299, 'USD')             # Money object default
     monetize :discount, with: false, default: 0               # Zero default, no currency
     monetize :premium, currency: 'EUR', default: 19.99        # Different currency
@@ -87,7 +87,7 @@ RSpec.describe 'NestedRecord monetize default values' do
     it 'allows overriding defaults after initialization' do
       product = ProductWithDefaults.new
       expect(product.price.cents).to eq(999)   # Default
-      
+
       product.price = 25.50
       expect(product.price.cents).to eq(2550)  # Overridden
     end
@@ -109,22 +109,22 @@ RSpec.describe 'NestedRecord monetize default values' do
     it 'applies defaults in nested records' do
       product = ProductWithNestedDefaults.new
       product.build_pricing
-      
+
       expect(product.pricing.amount).to be_a(Money)
       expect(product.pricing.amount.cents).to eq(2999)  # 29.99 * 100
       expect(product.pricing.amount.currency.to_s).to eq('EUR')
-      
+
       expect(product.pricing.discount).to be_a(Money)
       expect(product.pricing.discount.cents).to eq(199)
       expect(product.pricing.discount.currency.to_s).to eq('GBP')
-      
+
       expect(product.pricing.description).to eq('Standard pricing')
     end
 
     it 'allows overriding nested defaults via attributes' do
       product = ProductWithNestedDefaults.new
       product.pricing_attributes = { amount: 39.99, description: 'Premium pricing' }
-      
+
       expect(product.pricing.amount.cents).to eq(3999)  # 39.99 * 100
       expect(product.pricing.discount.cents).to eq(199) # Default still applied
       expect(product.pricing.description).to eq('Premium pricing')
@@ -134,11 +134,11 @@ RSpec.describe 'NestedRecord monetize default values' do
   describe 'nested_accessors defaults' do
     it 'applies defaults in nested_accessors' do
       user = UserWithDefaults.new
-      
+
       expect(user.salary).to be_a(Money)
       expect(user.salary.cents).to eq(5000000)  # 50000.00 * 100
       expect(user.salary.currency.to_s).to eq('USD')
-      
+
       expect(user.bonus.cents).to eq(500000)    # 5000.00 * 100
       expect(user.allowance.cents).to eq(0)
       expect(user.department).to eq('General')
@@ -148,7 +148,7 @@ RSpec.describe 'NestedRecord monetize default values' do
       user = UserWithDefaults.new
       user.salary = 75000.00
       user.department = 'Engineering'
-      
+
       expect(user.salary.cents).to eq(7500000)  # 75000.00 * 100
       expect(user.bonus.cents).to eq(500000)    # Default still applied
       expect(user.department).to eq('Engineering')
@@ -160,11 +160,11 @@ RSpec.describe 'NestedRecord monetize default values' do
       product = ProductWithDefaults.new
       json = product.as_json
 
-      price_data = json['attributes']['price']
+      price_data = json['price']
       expect(price_data['cents']).to eq(999)
       expect(price_data['currency_iso']).to eq('USD')
 
-      shipping_data = json['attributes']['shipping']
+      shipping_data = json['shipping']
       expect(shipping_data['cents']).to eq(500)
       expect(shipping_data['currency_iso']).to eq('USD')
     end
@@ -172,10 +172,10 @@ RSpec.describe 'NestedRecord monetize default values' do
     it 'deserializes and applies defaults correctly' do
       # Create a product with some values set
       original = ProductWithDefaults.new(price: 12.99)
-      
+
       # Get the type for manual serialization/deserialization testing
       type = ProductWithDefaults.type_for_attribute(:shipping)
-      
+
       # Serialize current value (should be default)
       serialized = type.serialize(original.shipping)
       expect(serialized['cents']).to eq(500)  # Default value
@@ -203,7 +203,7 @@ RSpec.describe 'NestedRecord monetize default values' do
     it 'updates currency when assigning Money object with different currency' do
       product = ProductWithDefaults.new
       expect(product.price_currency).to eq('USD')
-      
+
       product.price = Money.new(1999, 'CAD')
       expect(product.price_currency).to eq('CAD')
     end
@@ -215,7 +215,7 @@ RSpec.describe 'NestedRecord monetize default values' do
         include NestedRecord::Macro
         include ActiveModel::Model
         include ActiveModel::Attributes
-        
+
         monetize :amount, default: BigDecimal('99.99')
       end
 
@@ -228,7 +228,7 @@ RSpec.describe 'NestedRecord monetize default values' do
         include NestedRecord::Macro
         include ActiveModel::Model
         include ActiveModel::Attributes
-        
+
         monetize :amount, default: Money.new(0, 'JPY')
       end
 
@@ -242,7 +242,7 @@ RSpec.describe 'NestedRecord monetize default values' do
         include NestedRecord::Macro
         include ActiveModel::Model
         include ActiveModel::Attributes
-        
+
         monetize :amount, currency: 'JPY', default: 25.75
       end
 
