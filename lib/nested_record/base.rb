@@ -18,6 +18,8 @@ class NestedRecord::Base
     end
 
     def inherited(klass)
+      # super first: ActiveModel (Rails 8.2+) resets the subclass attribute registry in its own hook.
+      super
       parent = self
       if parent < NestedRecord::Base
         klass.class_eval do
@@ -25,7 +27,6 @@ class NestedRecord::Base
           @deep_inherted = true
         end
       end
-      super
     end
 
     def deep_inherited?

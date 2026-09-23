@@ -27,5 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "appraisal"
 
-  spec.add_dependency "activemodel", "> 7.1", "< 8.2"
+  spec.add_dependency "activemodel", "> 7.1", "< 8.3"
 end
