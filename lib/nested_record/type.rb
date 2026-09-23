@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class NestedRecord::Type < ActiveModel::Type::Value
+  include ActiveModel::Type::Helpers::Mutable
   require 'nested_record/type/many'
   require 'nested_record/type/one'
 

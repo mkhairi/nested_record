@@ -82,6 +82,10 @@ RSpec.describe 'dirty tracking' do
     end
   end
 
+  it 'marks the attribute types mutable' do
+    expect(Foo.attribute_types.values_at('bar', 'bars')).to all be_mutable
+  end
+
   describe NestedRecord::Base do
     it 'is not equal to nil' do
       expect(Bar.new).not_to eq nil
