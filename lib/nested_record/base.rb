@@ -6,6 +6,7 @@ class NestedRecord::Base
   include ActiveModel::Dirty
   include ActiveModel::Validations::Callbacks
   include NestedRecord::Macro
+  include NestedRecord::MultiparameterAttributes
 
   class << self
     include ActiveModel::Callbacks
