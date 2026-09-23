@@ -25,6 +25,12 @@ class NestedRecord::Type < ActiveModel::Type::Value
     ActiveSupport::JSON.encode(obj.as_json) unless obj.nil?
   end
 
+  # Nested records are mutable, so compare against the stored JSON
+  # (mirrors ActiveRecord::Type::Json#changed_in_place?).
+  def changed_in_place?(raw_old_value, new_value)
+    deserialize(raw_old_value) != new_value
+  end
+
   private
 
   def record_class

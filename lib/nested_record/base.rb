@@ -234,7 +234,7 @@ class NestedRecord::Base
   end
 
   def ==(other)
-    attributes == other.attributes
+    other.is_a?(NestedRecord::Base) && attributes == other.attributes
   end
 
   def as_json
