@@ -18,26 +18,7 @@ class NestedRecord::NestedAccessorsSetup
       end.map! { |_, args, _| args.first.macro_recorder }
     ].flat_map(&:macros)
 
-    macros.each do |macro, args, _block|
-      case macro
-      when :attribute
-        attr_name = args.first
-        delegate(attr_name)
-        delegate("#{attr_name}?")
-        delegate1("#{attr_name}=")
-      when :has_one_nested
-        assoc_name = args.first
-        delegate(assoc_name)
-        delegate("#{assoc_name}!")
-        delegate1("#{assoc_name}=")
-        delegate1("#{assoc_name}_attributes=")
-      when :has_many_nested
-        assoc_name = args.first
-        delegate(assoc_name)
-        delegate1("#{assoc_name}=")
-        delegate1("#{assoc_name}_attributes=")
-      end
-    end
+    macros.each { |macro, args, kwargs, _block| delegate_macro(macro, args, kwargs) }
 
     owner.include(@extension)
   end
@@ -47,6 +28,29 @@ class NestedRecord::NestedAccessorsSetup
   end
 
   private
+
+  # Defines the owner-level delegators for one recorded macro.
+  # Extension gems prepend an override and call super for macros they don't own.
+  def delegate_macro(macro, args, kwargs)
+    case macro
+    when :attribute
+      attr_name = args.first
+      delegate(attr_name)
+      delegate("#{attr_name}?")
+      delegate1("#{attr_name}=")
+    when :has_one_nested
+      assoc_name = args.first
+      delegate(assoc_name)
+      delegate("#{assoc_name}!")
+      delegate1("#{assoc_name}=")
+      delegate1("#{assoc_name}_attributes=")
+    when :has_many_nested
+      assoc_name = args.first
+      delegate(assoc_name)
+      delegate1("#{assoc_name}=")
+      delegate1("#{assoc_name}_attributes=")
+    end
+  end
 
   def delegate(meth)
     @extension.class_eval <<~RUBY, __FILE__, __LINE__ + 1

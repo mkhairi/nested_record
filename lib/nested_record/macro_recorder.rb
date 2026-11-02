@@ -5,6 +5,15 @@ class NestedRecord::MacroRecorder
 
   attr_reader :macros
 
+  # Lets extension gems record their own macros inside nested_accessors blocks.
+  def self.register(*meths)
+    meths.each do |meth|
+      define_method(meth) do |*args, **kwargs, &block|
+        @macros << [meth, args, kwargs, block]
+      end
+    end
+  end
+
   MACROS = %i[
     include
     attribute
@@ -27,11 +36,8 @@ class NestedRecord::MacroRecorder
     validates_size_of
     after_initialize
     before_validation after_validation
-  ].freeze.each do |meth|
-    define_method(meth) do |*args, **kwargs, &block|
-      @macros << [meth, args, kwargs, block]
-    end
-  end
+  ].freeze
+  register(*MACROS)
 
   def apply_to(mod_or_class)
     macros = @macros

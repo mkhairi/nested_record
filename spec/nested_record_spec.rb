@@ -757,5 +757,42 @@ RSpec.describe NestedRecord do
         )
       end
     end
+
+    context 'with a macro registered by an extension' do
+      before(:all) do
+        NestedRecord::Base.extend(Module.new do
+          def pair(name)
+            attribute :"#{name}_a", :integer
+            attribute :"#{name}_b", :integer
+          end
+        end)
+        NestedRecord::MacroRecorder.register(:pair)
+        NestedRecord::NestedAccessorsSetup.prepend(Module.new do
+          private
+
+          def delegate_macro(macro, args, kwargs)
+            return super unless macro == :pair
+
+            %w[a b].each do |part|
+              delegate("#{args.first}_#{part}")
+              delegate1("#{args.first}_#{part}=")
+            end
+          end
+        end)
+      end
+
+      active_model(:FooPair) do
+        nested_accessors from: :bar, class_name: true do
+          attribute :x, :integer
+          pair :size
+        end
+      end
+
+      it 'delegates the extension macro and keeps the built-in ones' do
+        foo = FooPair.new(x: 1, size_a: 2, size_b: 3)
+        expect(foo).to have_attributes(x: 1, size_a: 2, size_b: 3)
+        expect(foo.bar).to have_attributes(x: 1, size_a: 2, size_b: 3)
+      end
+    end
   end
 end
