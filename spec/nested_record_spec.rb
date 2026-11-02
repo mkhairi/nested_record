@@ -171,6 +171,21 @@ RSpec.describe NestedRecord do
         expect(foo).not_to be_valid
         expect(foo.errors['bar.x']).to eq ["can't be blank"]
       end
+
+      context 'with an anonymous nested class' do
+        active_model(:Owner) do
+          has_one_nested :thing do
+            attribute :x, :string
+            validates :x, presence: true
+          end
+        end
+
+        it 'builds full messages' do
+          owner = Owner.new(thing_attributes: { x: '' })
+          expect(owner).not_to be_valid
+          expect(owner.errors.full_messages).to eq ["Thing x can't be blank"]
+        end
+      end
     end
   end
 

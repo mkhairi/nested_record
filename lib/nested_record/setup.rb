@@ -83,7 +83,13 @@ class NestedRecord::Setup
       raise NestedRecord::ConfigurationError, "Bad :class_name option #{cn.inspect}"
     end
     @record_class = Class.new(NestedRecord::Base, &block)
-    @owner.const_set(class_name, @record_class) if class_name
+    if class_name
+      @owner.const_set(class_name, @record_class)
+    else
+      # Owner errors call human_attribute_name, which raises on a nameless class.
+      model_name = ActiveModel::Name.new(@record_class, nil, [@owner.name, infer_record_class_name].compact.join('::'))
+      @record_class.define_singleton_method(:model_name) { model_name }
+    end
   end
 
   def link_existing_record_class
